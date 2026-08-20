@@ -12,7 +12,7 @@ export const siteConfig = {
     postalCode: "36300",
     country: "Srbija",
     phone: "+3816298588",
-    email: "info@ironforge.rs",
+    email: "info@iron-forge.net",
     workingHours: {
       sr: "Pon–Sub: 07:00–17:00",
       en: "Mon–Sat: 07:00–17:00",

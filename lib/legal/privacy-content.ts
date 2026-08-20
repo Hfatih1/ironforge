@@ -70,14 +70,14 @@ export const privacyContent: Record<Locale, PrivacyContent> = {
       {
         title: "Vaša prava",
         paragraphs: [
-          "Imate pravo da zatražite pristup, ispravku ili brisanje svojih podataka, kao i da uložite prigovor na obradu. Zahtev pošaljite na info@ironforge.rs.",
+          "Imate pravo da zatražite pristup, ispravku ili brisanje svojih podataka, kao i da uložite prigovor na obradu. Zahtev pošaljite na info@iron-forge.net.",
           "Imate pravo da podnesete pritužbu Povereniku za informacije od javnog značaja i zaštitu podataka o ličnosti Republike Srbije.",
         ],
       },
       {
         title: "Kontakt",
         paragraphs: [
-          "Za pitanja u vezi sa privatnošću pišite na info@ironforge.rs ili nas kontaktirajte na adresi Save Kovačevića br. 5, 36300 Novi Pazar.",
+          "Za pitanja u vezi sa privatnošću pišite na info@iron-forge.net ili nas kontaktirajte na adresi Save Kovačevića br. 5, 36300 Novi Pazar.",
         ],
       },
     ],
@@ -136,14 +136,14 @@ export const privacyContent: Record<Locale, PrivacyContent> = {
       {
         title: "Your rights",
         paragraphs: [
-          "You have the right to request access, correction or deletion of your data, and to object to processing. Send requests to info@ironforge.rs.",
+          "You have the right to request access, correction or deletion of your data, and to object to processing. Send requests to info@iron-forge.net.",
           "You may lodge a complaint with the Commissioner for Information of Public Importance and Personal Data Protection of the Republic of Serbia.",
         ],
       },
       {
         title: "Contact",
         paragraphs: [
-          "For privacy questions email info@ironforge.rs or write to Save Kovačevića 5, 36300 Novi Pazar, Serbia.",
+          "For privacy questions email info@iron-forge.net or write to Save Kovačevića 5, 36300 Novi Pazar, Serbia.",
         ],
       },
     ],
