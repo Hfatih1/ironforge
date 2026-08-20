@@ -1,6 +1,7 @@
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/types";
 import { siteConfig } from "@/lib/site-config";
+import { getTurnstileSiteKey } from "@/lib/turnstile/config";
 import { ContactForm } from "@/components/sections/ContactForm";
 
 type ContactProps = {
@@ -26,7 +27,7 @@ export function Contact({ locale, dict }: ContactProps) {
             <ContactForm
               locale={locale}
               dict={dict}
-              turnstileSiteKey={process.env.TURNSTILE_SITE_KEY}
+              turnstileSiteKey={getTurnstileSiteKey()}
             />
 
             <div>

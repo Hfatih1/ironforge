@@ -1,111 +1,96 @@
 "use server";
 
+import { headers } from "next/headers";
 import { Resend } from "resend";
+import { getContactValidationMessages } from "@/lib/contact/messages";
 import type { ContactFormState } from "@/lib/contact/validation";
 import {
-  contactJobTypes,
   parseContactForm,
   validateContactInput,
 } from "@/lib/contact/validation";
 import { getCategoryLabel } from "@/lib/i18n/categories";
 import { siteConfig } from "@/lib/site-config";
+import { getTurnstileSecret } from "@/lib/turnstile/config";
+import { verifyTurnstileToken } from "@/lib/turnstile/verify";
 
-const validationMessages = {
-  sr: {
-    nameRequired: "Unesite ime i prezime.",
-    emailInvalid: "Unesite ispravnu e-mail adresu.",
-    phoneRequired: "Unesite broj telefona.",
-    jobTypeRequired: "Izaberite tip posla.",
-    messageRequired: "Poruka mora imati najmanje 10 karaktera.",
-    spam: "Upit nije poslat. Pokušajte ponovo.",
-    config: "Forma trenutno nije aktivna. Kontaktirajte nas telefonom ili e-mailom.",
-    sendError: "Greška pri slanju. Pokušajte ponovo ili nas kontaktirajte direktno.",
-    success:
-      "Upit je poslat. Odgovor možete očekivati u roku od jednog radnog dana.",
-  },
-  en: {
-    nameRequired: "Please enter your full name.",
-    emailInvalid: "Please enter a valid email address.",
-    phoneRequired: "Please enter a phone number.",
-    jobTypeRequired: "Please select a job type.",
-    messageRequired: "Message must be at least 10 characters.",
-    spam: "Your inquiry was not sent. Please try again.",
-    config: "The form is not active yet. Please contact us by phone or email.",
-    sendError: "Failed to send. Please try again or contact us directly.",
-    success:
-      "Your inquiry has been sent. Expect a reply within one business day.",
-  },
-};
+function formatFromAddress(email: string): string {
+  const trimmed = email.trim();
+  if (trimmed.includes("<")) return trimmed;
+  return `Iron Forge <${trimmed}>`;
+}
 
-async function verifyTurnstile(token: string): Promise<boolean> {
-  const secret = process.env.TURNSTILE_SECRET_KEY;
-  if (!secret) return true;
-  if (!token) return false;
-
-  const response = await fetch(
-    "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ secret, response: token }),
-    },
+async function getClientIp(): Promise<string | undefined> {
+  const headerList = await headers();
+  return (
+    headerList.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    headerList.get("x-real-ip")?.trim() ||
+    undefined
   );
-
-  const data = (await response.json()) as { success?: boolean };
-  return Boolean(data.success);
 }
 
 export async function submitContact(
   _prevState: ContactFormState,
   formData: FormData,
 ): Promise<ContactFormState> {
-  const input = parseContactForm(formData);
-  const messages = validationMessages[input.locale];
-
-  if (input.website) {
-    return { status: "error", message: messages.spam };
-  }
-
-  const fieldErrors = validateContactInput(input, messages);
-  if (Object.keys(fieldErrors).length > 0) {
-    return { status: "error", fieldErrors };
-  }
-
-  const turnstileOk = await verifyTurnstile(input.turnstileToken);
-  if (!turnstileOk) {
-    return { status: "error", message: messages.spam };
-  }
-
-  const apiKey = process.env.RESEND_API_KEY;
-  const emailTo = process.env.CONTACT_EMAIL_TO;
-  const emailFrom = process.env.CONTACT_EMAIL_FROM;
-
-  if (!apiKey || !emailTo || !emailFrom) {
-    return { status: "error", message: messages.config };
-  }
-
-  const jobLabel = getCategoryLabel(input.jobType, input.locale);
-  const subject =
-    input.locale === "sr"
-      ? `Upit sa sajta: ${jobLabel} — ${input.company || input.name}`
-      : `Website inquiry: ${jobLabel} — ${input.company || input.name}`;
-
-  const body = [
-    `Ime / Name: ${input.name}`,
-    `Firma / Company: ${input.company || "—"}`,
-    `E-mail: ${input.email}`,
-    `Telefon / Phone: ${input.phone}`,
-    `Tip posla / Job type: ${jobLabel}`,
-    "",
-    input.message,
-    "",
-    `— Poslato sa / Sent from: ${siteConfig.siteUrl}/${input.locale}`,
-  ].join("\n");
-
   try {
+    const input = parseContactForm(formData);
+    const messages = getContactValidationMessages(input.locale);
+
+    if (input.website) {
+      return { status: "error", message: messages.spam };
+    }
+
+    const fieldErrors = validateContactInput(input, messages);
+    if (Object.keys(fieldErrors).length > 0) {
+      return { status: "error", fieldErrors };
+    }
+
+    if (getTurnstileSecret()) {
+      if (!input.turnstileToken) {
+        return { status: "error", message: messages.turnstileRequired };
+      }
+
+      const turnstileResult = await verifyTurnstileToken(
+        input.turnstileToken,
+        await getClientIp(),
+      );
+
+      if (!turnstileResult.ok) {
+        return { status: "error", message: messages.spam };
+      }
+    }
+
+    const apiKey = process.env.RESEND_API_KEY?.trim();
+    const emailTo = process.env.CONTACT_EMAIL_TO?.trim();
+    const emailFrom = process.env.CONTACT_EMAIL_FROM?.trim();
+
+    if (!apiKey || !emailTo || !emailFrom) {
+      return { status: "error", message: messages.config };
+    }
+
+    const jobLabel = getCategoryLabel(input.jobType, input.locale);
+    const subject =
+      input.locale === "sr"
+        ? `Upit sa sajta: ${jobLabel} — ${input.company || input.name}`
+        : `Website inquiry: ${jobLabel} — ${input.company || input.name}`;
+
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? siteConfig.siteUrl;
+
+    const body = [
+      `Ime / Name: ${input.name}`,
+      `Firma / Company: ${input.company || "—"}`,
+      `E-mail: ${input.email}`,
+      `Telefon / Phone: ${input.phone}`,
+      `Tip posla / Job type: ${jobLabel}`,
+      "",
+      input.message,
+      "",
+      `— Poslato sa / Sent from: ${siteUrl}/${input.locale}`,
+    ].join("\n");
+
     const resend = new Resend(apiKey);
     const { error } = await resend.emails.send({
-      from: emailFrom,
+      from: formatFromAddress(emailFrom),
       to: emailTo,
       replyTo: input.email,
       subject,
@@ -113,13 +98,17 @@ export async function submitContact(
     });
 
     if (error) {
+      console.error("Resend error:", error);
       return { status: "error", message: messages.sendError };
     }
 
     return { status: "success", message: messages.success };
-  } catch {
-    return { status: "error", message: messages.sendError };
+  } catch (error) {
+    console.error("Contact form error:", error);
+    const locale = String(formData.get("locale") ?? "sr") === "en" ? "en" : "sr";
+    return {
+      status: "error",
+      message: getContactValidationMessages(locale).sendError,
+    };
   }
 }
-
-export { contactJobTypes };

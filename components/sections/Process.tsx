@@ -15,34 +15,25 @@ export function Process({ dict }: ProcessProps) {
           <p className="mt-4 text-lg leading-relaxed text-muted">{dict.process.subtitle}</p>
         </div>
 
-        <div className="relative mt-14">
-          <div
-            className="absolute bottom-5 left-5 top-5 w-px bg-border sm:left-8"
-            aria-hidden="true"
-          />
+        <ol className="mt-14 space-y-6 sm:space-y-8">
+          {dict.process.steps.map((step, index) => (
+            <li
+              key={step.title}
+              className="flex items-start gap-4 sm:gap-6"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center border border-accent bg-bg font-heading text-sm text-accent sm:h-12 sm:w-12 sm:text-base">
+                {index + 1}
+              </span>
 
-          <ol className="space-y-6 sm:space-y-8">
-            {dict.process.steps.map((step, index) => (
-              <li
-                key={step.title}
-                className="relative grid grid-cols-[2.5rem_1fr] items-start gap-4 sm:grid-cols-[4rem_1fr] sm:gap-8"
-              >
-                <div className="relative z-10 flex justify-center pt-1 sm:justify-start">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center border border-accent bg-bg font-heading text-sm text-accent">
-                    {index + 1}
-                  </span>
-                </div>
-
-                <article className="border border-border bg-surface p-6 sm:p-8">
-                  <h3 className="font-heading text-2xl tracking-wide text-text">
-                    {step.title}
-                  </h3>
-                  <p className="mt-3 leading-relaxed text-muted">{step.text}</p>
-                </article>
-              </li>
-            ))}
-          </ol>
-        </div>
+              <article className="min-w-0 flex-1 border border-border bg-surface p-6 sm:p-8">
+                <h3 className="font-heading text-xl tracking-wide text-text sm:text-2xl">
+                  {step.title}
+                </h3>
+                <p className="mt-3 leading-relaxed text-muted">{step.text}</p>
+              </article>
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   );
