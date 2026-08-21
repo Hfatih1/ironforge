@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { submitContact } from "@/app/actions/contact";
 import { getContactValidationMessages } from "@/lib/contact/messages";
 import type { ContactField, ContactFormState } from "@/lib/contact/validation";
@@ -37,25 +37,22 @@ export function ContactForm({
     Partial<Record<ContactField, string>>
   >({});
   const [turnstileError, setTurnstileError] = useState<string | null>(null);
-  const [turnstilePassed, setTurnstilePassed] = useState(
-    !turnstileSiteKey && !turnstileRequired,
-  );
+  const [turnstileToken, setTurnstileToken] = useState("");
   const [resetSignal, setResetSignal] = useState(0);
-  const tokenRef = useRef<HTMLInputElement>(null);
 
   const validationMessages = getContactValidationMessages(locale);
   const turnstileEnabled = Boolean(turnstileSiteKey);
   const mustPassTurnstile = turnstileEnabled || turnstileRequired;
+  const hasTurnstileToken = turnstileToken.length > 0;
   const fieldErrors = { ...clientErrors, ...state.fieldErrors };
 
   useEffect(() => {
     if (state.status === "idle") return;
+    setTurnstileToken("");
     setResetSignal((value) => value + 1);
-    setTurnstilePassed(false);
     setTurnstileError(null);
-    if (tokenRef.current) tokenRef.current.value = "";
     if (state.fieldErrors) setClientErrors({});
-  }, [state.status, state.message, state.fieldErrors]);
+  }, [state.status, state.message]);
 
   const fieldClass = (field: ContactField) =>
     fieldErrors[field]
@@ -73,7 +70,7 @@ export function ContactForm({
       return;
     }
 
-    if (mustPassTurnstile && !tokenRef.current?.value) {
+    if (mustPassTurnstile && !hasTurnstileToken) {
       event.preventDefault();
       setTurnstileError(validationMessages.turnstileRequired);
       return;
@@ -83,20 +80,22 @@ export function ContactForm({
     setTurnstileError(null);
   };
 
+  const submitWithToken = (formData: FormData) => {
+    if (turnstileToken) {
+      formData.set("turnstileToken", turnstileToken);
+    }
+    return formAction(formData);
+  };
+
   return (
     <form
-      action={formAction}
+      action={submitWithToken}
       noValidate
       onSubmit={handleSubmit}
       className="space-y-4 border border-border bg-surface p-6 sm:p-8"
     >
       <input type="hidden" name="locale" value={locale} />
-      <input
-        ref={tokenRef}
-        type="hidden"
-        name="turnstileToken"
-        defaultValue=""
-      />
+      <input type="hidden" name="turnstileToken" value={turnstileToken} readOnly />
 
       <div className="sr-only" aria-hidden="true">
         <label htmlFor="website">Website</label>
@@ -228,7 +227,10 @@ export function ContactForm({
       </div>
 
       {turnstileRequired && !turnstileSiteKey && (
-        <p className="border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">
+        <p
+          className="border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+          role="alert"
+        >
           {validationMessages.config}
         </p>
       )}
@@ -237,18 +239,18 @@ export function ContactForm({
         <TurnstileWidget
           siteKey={turnstileSiteKey}
           resetSignal={resetSignal}
-          onReadyChange={(ready) => {
-            setTurnstilePassed(ready);
-            if (ready) setTurnstileError(null);
-          }}
           onTokenChange={(token) => {
-            if (tokenRef.current) tokenRef.current.value = token;
+            setTurnstileToken(token);
+            if (token) setTurnstileError(null);
           }}
         />
       )}
 
       {turnstileError && (
-        <p className="border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">
+        <p
+          className="border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+          role="alert"
+        >
           {turnstileError}
         </p>
       )}
@@ -275,7 +277,7 @@ export function ContactForm({
         type="submit"
         disabled={
           isPending ||
-          (mustPassTurnstile && !turnstilePassed) ||
+          (mustPassTurnstile && !hasTurnstileToken) ||
           (turnstileRequired && !turnstileSiteKey)
         }
         className="inline-flex w-full items-center justify-center bg-accent px-6 py-3 text-sm font-semibold uppercase tracking-wide text-bg transition-colors hover:bg-accent-hover disabled:opacity-60 sm:w-auto"

@@ -16,6 +16,7 @@ declare global {
           callback?: (token: string) => void;
           "expired-callback"?: () => void;
           "error-callback"?: () => void;
+          "response-field"?: boolean;
         },
       ) => string;
       reset: (widgetId: string) => void;
@@ -27,26 +28,22 @@ declare global {
 type TurnstileWidgetProps = {
   siteKey: string;
   resetSignal?: number;
-  onReadyChange?: (ready: boolean) => void;
   onTokenChange?: (token: string) => void;
 };
 
 export function TurnstileWidget({
   siteKey,
   resetSignal = 0,
-  onReadyChange,
   onTokenChange,
 }: TurnstileWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
-  const onReadyChangeRef = useRef(onReadyChange);
   const onTokenChangeRef = useRef(onTokenChange);
   const [scriptReady, setScriptReady] = useState(false);
 
   useEffect(() => {
-    onReadyChangeRef.current = onReadyChange;
     onTokenChangeRef.current = onTokenChange;
-  }, [onReadyChange, onTokenChange]);
+  }, [onTokenChange]);
 
   useEffect(() => {
     if (!scriptReady || !containerRef.current || !window.turnstile) {
@@ -62,17 +59,15 @@ export function TurnstileWidget({
       sitekey: siteKey,
       action: TURNSTILE_ACTION,
       theme: "dark",
+      "response-field": false,
       callback: (token) => {
         onTokenChangeRef.current?.(token);
-        onReadyChangeRef.current?.(true);
       },
       "expired-callback": () => {
         onTokenChangeRef.current?.("");
-        onReadyChangeRef.current?.(false);
       },
       "error-callback": () => {
         onTokenChangeRef.current?.("");
-        onReadyChangeRef.current?.(false);
       },
     });
 
@@ -91,7 +86,6 @@ export function TurnstileWidget({
 
     window.turnstile.reset(widgetIdRef.current);
     onTokenChangeRef.current?.("");
-    onReadyChangeRef.current?.(false);
   }, [resetSignal]);
 
   return (
