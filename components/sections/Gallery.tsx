@@ -7,6 +7,7 @@ import type { Dictionary } from "@/lib/i18n/types";
 import type { ServiceCategory } from "@/lib/i18n/types";
 import { getCategoryLabel } from "@/lib/i18n/categories";
 import { galleryItems } from "@/lib/gallery";
+import { ArrowIcon } from "@/components/ui/ArrowIcon";
 
 type GalleryProps = {
   locale: Locale;
@@ -155,7 +156,7 @@ export function Gallery({ locale, dict }: GalleryProps) {
             className="absolute left-4 top-1/2 z-10 hidden -translate-y-1/2 border border-border px-3 py-4 text-text hover:border-accent sm:block"
             aria-label={dict.gallery.previous}
           >
-            ←
+            <ArrowIcon direction="left" className="h-5 w-5" />
           </button>
 
           <button
@@ -167,7 +168,7 @@ export function Gallery({ locale, dict }: GalleryProps) {
             className="absolute right-4 top-1/2 z-10 hidden -translate-y-1/2 border border-border px-3 py-4 text-text hover:border-accent sm:block"
             aria-label={dict.gallery.next}
           >
-            →
+            <ArrowIcon direction="right" className="h-5 w-5" />
           </button>
 
           <figure

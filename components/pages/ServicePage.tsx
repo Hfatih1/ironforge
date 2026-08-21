@@ -4,6 +4,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
 import { Button } from "@/components/ui/Button";
+import { ArrowIcon } from "@/components/ui/ArrowIcon";
 import type { Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { ServiceCategory } from "@/lib/i18n/types";
@@ -125,9 +126,13 @@ export function ServicePage({ locale, category, slug }: ServicePageProps) {
             <div className="mt-10">
               <Link
                 href={`${homeHref}#galerija`}
-                className="text-sm font-semibold uppercase tracking-wider text-accent transition-colors hover:text-accent-hover"
+                className="group inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-accent transition-colors hover:text-accent-hover"
               >
-                {locale === "sr" ? "Pogledaj celu galeriju →" : "View full gallery →"}
+                {locale === "sr" ? "Pogledaj celu galeriju" : "View full gallery"}
+                <ArrowIcon
+                  direction="right"
+                  className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-1"
+                />
               </Link>
             </div>
           </div>

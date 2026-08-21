@@ -35,12 +35,17 @@ export function FAQ({ dict }: FAQProps) {
               <summary className="cursor-pointer list-none px-6 py-5 font-semibold text-text transition-colors hover:text-accent [&::-webkit-details-marker]:hidden">
                 <span className="flex items-center justify-between gap-4">
                   {item.question}
-                  <span
-                    className="shrink-0 text-accent transition-transform group-open:rotate-45"
+                  <svg
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                    strokeLinecap="round"
+                    className="h-4 w-4 shrink-0 text-accent transition-transform duration-200 group-open:rotate-45"
                     aria-hidden="true"
                   >
-                    +
-                  </span>
+                    <path d="M8 3v10M3 8h10" />
+                  </svg>
                 </span>
               </summary>
               <div className="border-t border-border px-6 pb-5 pt-2 leading-relaxed text-muted">

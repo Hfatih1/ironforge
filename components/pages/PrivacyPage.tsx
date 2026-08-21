@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
+import { ArrowIcon } from "@/components/ui/ArrowIcon";
 import type { Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { privacyContent } from "@/lib/legal/privacy-content";
@@ -27,9 +28,13 @@ export function PrivacyPage({ locale }: PrivacyPageProps) {
         <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
           <Link
             href={`/${locale}`}
-            className="text-sm text-muted transition-colors hover:text-accent"
+            className="group inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-accent"
           >
-            ← {locale === "sr" ? "Nazad na početnu" : "Back to home"}
+            <ArrowIcon
+              direction="left"
+              className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-1"
+            />
+            {locale === "sr" ? "Nazad na početnu" : "Back to home"}
           </Link>
 
           <h1 className="font-heading mt-6 text-4xl tracking-wide text-text sm:text-5xl">

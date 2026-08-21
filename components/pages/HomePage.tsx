@@ -34,7 +34,7 @@ export function HomePage({ locale }: HomePageProps) {
       />
       <Header locale={locale} dict={dict} pathname={pathname} />
       <main className="flex-1">
-        <Hero dict={dict} />
+        <Hero locale={locale} dict={dict} />
         <ServicesGrid locale={locale} dict={dict} />
         <WhyUs dict={dict} />
         <Process dict={dict} />
