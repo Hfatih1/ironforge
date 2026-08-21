@@ -46,7 +46,7 @@ async function main() {
   const enHtml = await (await fetch(`${BASE}/en`)).text();
   const contentChecks = [
     ["info@iron-forge.net", enHtml.includes("info@iron-forge.net")],
-    ["wa.me/3816298588", enHtml.includes("wa.me/3816298588")],
+    ["wa.me/38162298588", enHtml.includes("wa.me/38162298588")],
     ["instagram", enHtml.includes("instagram.com/ironforgenp")],
     ["facebook", enHtml.includes("facebook.com/IronForgeNP")],
     ["json-ld", enHtml.includes("application/ld+json")],

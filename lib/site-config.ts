@@ -11,7 +11,7 @@ export const siteConfig = {
     city: "Novi Pazar",
     postalCode: "36300",
     country: "Srbija",
-    phone: "+3816298588",
+    phone: "+38162298588",
     email: "info@iron-forge.net",
     workingHours: {
       sr: "Pon–Sub: 07:00–17:00",
@@ -29,6 +29,6 @@ export const siteConfig = {
     facebook: "https://www.facebook.com/IronForgeNP",
     linkedin: "",
   },
-  whatsapp: "+3816298588",
+  whatsapp: "+38162298588",
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
 } as const;
