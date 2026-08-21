@@ -18,11 +18,17 @@ type ContactFormProps = {
   locale: Locale;
   dict: Dictionary;
   turnstileSiteKey?: string;
+  turnstileRequired?: boolean;
 };
 
 const initialState: ContactFormState = { status: "idle" };
 
-export function ContactForm({ locale, dict, turnstileSiteKey }: ContactFormProps) {
+export function ContactForm({
+  locale,
+  dict,
+  turnstileSiteKey,
+  turnstileRequired = false,
+}: ContactFormProps) {
   const [state, formAction, isPending] = useActionState(
     submitContact,
     initialState,
@@ -30,18 +36,23 @@ export function ContactForm({ locale, dict, turnstileSiteKey }: ContactFormProps
   const [clientErrors, setClientErrors] = useState<
     Partial<Record<ContactField, string>>
   >({});
-  const [turnstilePassed, setTurnstilePassed] = useState(!turnstileSiteKey);
+  const [turnstileError, setTurnstileError] = useState<string | null>(null);
+  const [turnstilePassed, setTurnstilePassed] = useState(
+    !turnstileSiteKey && !turnstileRequired,
+  );
   const [resetSignal, setResetSignal] = useState(0);
   const tokenRef = useRef<HTMLInputElement>(null);
 
   const validationMessages = getContactValidationMessages(locale);
   const turnstileEnabled = Boolean(turnstileSiteKey);
+  const mustPassTurnstile = turnstileEnabled || turnstileRequired;
   const fieldErrors = { ...clientErrors, ...state.fieldErrors };
 
   useEffect(() => {
     if (state.status === "idle") return;
     setResetSignal((value) => value + 1);
     setTurnstilePassed(false);
+    setTurnstileError(null);
     if (tokenRef.current) tokenRef.current.value = "";
     if (state.fieldErrors) setClientErrors({});
   }, [state.status, state.message, state.fieldErrors]);
@@ -62,7 +73,14 @@ export function ContactForm({ locale, dict, turnstileSiteKey }: ContactFormProps
       return;
     }
 
+    if (mustPassTurnstile && !tokenRef.current?.value) {
+      event.preventDefault();
+      setTurnstileError(validationMessages.turnstileRequired);
+      return;
+    }
+
     setClientErrors({});
+    setTurnstileError(null);
   };
 
   return (
@@ -76,7 +94,7 @@ export function ContactForm({ locale, dict, turnstileSiteKey }: ContactFormProps
       <input
         ref={tokenRef}
         type="hidden"
-        name="cf-turnstile-response"
+        name="turnstileToken"
         defaultValue=""
       />
 
@@ -209,15 +227,30 @@ export function ContactForm({ locale, dict, turnstileSiteKey }: ContactFormProps
         )}
       </div>
 
+      {turnstileRequired && !turnstileSiteKey && (
+        <p className="border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">
+          {validationMessages.config}
+        </p>
+      )}
+
       {turnstileEnabled && turnstileSiteKey && (
         <TurnstileWidget
           siteKey={turnstileSiteKey}
           resetSignal={resetSignal}
-          onReadyChange={setTurnstilePassed}
+          onReadyChange={(ready) => {
+            setTurnstilePassed(ready);
+            if (ready) setTurnstileError(null);
+          }}
           onTokenChange={(token) => {
             if (tokenRef.current) tokenRef.current.value = token;
           }}
         />
+      )}
+
+      {turnstileError && (
+        <p className="border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">
+          {turnstileError}
+        </p>
       )}
 
       {state.status === "success" && state.message && (
@@ -240,7 +273,11 @@ export function ContactForm({ locale, dict, turnstileSiteKey }: ContactFormProps
 
       <button
         type="submit"
-        disabled={isPending || (turnstileEnabled && !turnstilePassed)}
+        disabled={
+          isPending ||
+          (mustPassTurnstile && !turnstilePassed) ||
+          (turnstileRequired && !turnstileSiteKey)
+        }
         className="inline-flex w-full items-center justify-center bg-accent px-6 py-3 text-sm font-semibold uppercase tracking-wide text-bg transition-colors hover:bg-accent-hover disabled:opacity-60 sm:w-auto"
       >
         {isPending ? dict.contact.sending : dict.contact.send}

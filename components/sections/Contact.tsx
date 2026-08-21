@@ -1,7 +1,7 @@
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/types";
 import { siteConfig } from "@/lib/site-config";
-import { getTurnstileSiteKey } from "@/lib/turnstile/config";
+import { getTurnstileSecret, getTurnstileSiteKey } from "@/lib/turnstile/config";
 import { ContactForm } from "@/components/sections/ContactForm";
 
 type ContactProps = {
@@ -28,6 +28,7 @@ export function Contact({ locale, dict }: ContactProps) {
               locale={locale}
               dict={dict}
               turnstileSiteKey={getTurnstileSiteKey()}
+              turnstileRequired={Boolean(getTurnstileSecret())}
             />
 
             <div>

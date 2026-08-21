@@ -39,6 +39,18 @@ export const contactJobTypes: ServiceCategory[] = [
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function getTurnstileToken(formData: FormData): string {
+  const explicit = String(formData.get("turnstileToken") ?? "").trim();
+  if (explicit) return explicit;
+
+  for (const value of formData.getAll("cf-turnstile-response")) {
+    const token = String(value).trim();
+    if (token) return token;
+  }
+
+  return "";
+}
+
 export function parseContactForm(formData: FormData): ContactFormInput {
   return {
     name: String(formData.get("name") ?? "").trim(),
@@ -48,7 +60,7 @@ export function parseContactForm(formData: FormData): ContactFormInput {
     jobType: String(formData.get("jobType") ?? "") as ServiceCategory,
     message: String(formData.get("message") ?? "").trim(),
     website: String(formData.get("website") ?? "").trim(),
-    turnstileToken: String(formData.get("cf-turnstile-response") ?? "").trim(),
+    turnstileToken: getTurnstileToken(formData),
     locale: String(formData.get("locale") ?? "sr") === "en" ? "en" : "sr",
   };
 }
