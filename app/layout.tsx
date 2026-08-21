@@ -1,8 +1,17 @@
+import type { Metadata } from "next";
 import { Bebas_Neue, Source_Sans_3 } from "next/font/google";
 import { headers } from "next/headers";
 import { SiteProviders } from "@/components/providers/SiteProviders";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import "./globals.css";
+
+const googleVerification =
+  process.env.GOOGLE_SITE_VERIFICATION?.trim() ||
+  "7jNCQzhMjJRhibCmHOGrbPSFZIiuUIWAtuNarUfHq18";
+
+export const metadata: Metadata = {
+  verification: { google: googleVerification },
+};
 
 const bebasNeue = Bebas_Neue({
   variable: "--font-bebas-neue",
